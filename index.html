@@ -21,6 +21,8 @@
     .container {
       text-align: center;
       animation: fadeIn 2s ease;
+      position: relative;
+      z-index: 1;
     }
 
     @keyframes fadeIn {
@@ -28,59 +30,85 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    .time {
-      font-size: 22vw;
-      font-weight: 200;
-      letter-spacing: 0.04em;
-      color: #e8e4dc;
+    .time-row {
+      display: inline-flex;
+      align-items: flex-end;
       line-height: 1;
-      text-shadow: 0 0 60px rgba(220, 210, 180, 0.15);
     }
 
-    .time .colon {
+    .hh {
+      font-size: 22vw;
+      font-weight: 200;
+      letter-spacing: 0.02em;
+      color: #FFD700;
+      text-shadow: 0 0 40px rgba(255, 215, 0, 0.3);
+    }
+
+    .colon {
+      font-size: 22vw;
+      font-weight: 200;
+      color: #555540;
       animation: blink 1s step-end infinite;
-      display: inline-block;
       margin: 0 0.01em;
+      line-height: 1;
     }
 
     @keyframes blink {
       0%, 100% { opacity: 1; }
-      50%       { opacity: 0.15; }
+      50%       { opacity: 0.1; }
     }
 
-    .seconds {
-      font-size: 5vw;
-      color: #7a7060;
-      letter-spacing: 0.1em;
-      margin-top: -1vw;
+    .mm-block {
+      position: relative;
+      display: inline-block;
+    }
+
+    .mm {
+      font-size: 22vw;
+      font-weight: 200;
+      letter-spacing: 0.02em;
+      color: #00FFFF;
+      text-shadow: 0 0 40px rgba(0, 255, 255, 0.3);
+      line-height: 1;
+    }
+
+    .ss {
+      position: absolute;
+      top: -1vw;
+      right: -2vw;
+      font-size: 5.5vw;
       font-weight: 300;
+      color: #39FF14;
+      text-shadow: 0 0 20px rgba(57, 255, 20, 0.5);
+      letter-spacing: 0.05em;
+      line-height: 1;
     }
 
     .divider {
-      width: 40px;
+      width: 50px;
       height: 1px;
-      background: #3a3528;
-      margin: 3vw auto;
+      background: #2a2a3a;
+      margin: 3vw auto 2.5vw;
     }
 
-    .date {
+    .fecha {
       font-size: 4vw;
-      color: #6a6258;
-      letter-spacing: 0.25em;
+      color: #FF3333;
+      text-shadow: 0 0 20px rgba(255, 50, 50, 0.3);
+      letter-spacing: 0.2em;
       text-transform: uppercase;
       font-weight: 300;
     }
 
-    .day-name {
+    .dia {
       font-size: 3vw;
-      color: #4a4540;
+      color: #882222;
       letter-spacing: 0.35em;
       text-transform: uppercase;
       margin-top: 1.5vw;
       font-weight: 300;
     }
 
-    /* Estrellas de fondo */
     .stars {
       position: fixed;
       top: 0; left: 0;
@@ -88,7 +116,6 @@
       pointer-events: none;
       z-index: 0;
     }
-
     .star {
       position: absolute;
       background: #fff;
@@ -96,13 +123,10 @@
       animation: twinkle var(--d) ease-in-out infinite;
       opacity: 0;
     }
-
     @keyframes twinkle {
       0%, 100% { opacity: 0; }
       50%       { opacity: var(--o); }
     }
-
-    .container { position: relative; z-index: 1; }
   </style>
 </head>
 <body>
@@ -110,36 +134,39 @@
   <div class="stars" id="stars"></div>
 
   <div class="container">
-    <div class="time">
-      <span id="hh">00</span><span class="colon">:</span><span id="mm">00</span>
+    <div class="time-row">
+      <span class="hh" id="hh">00</span>
+      <span class="colon">:</span>
+      <span class="mm-block">
+        <span class="ss" id="ss">00</span>
+        <span class="mm" id="mm">00</span>
+      </span>
     </div>
-    <div class="seconds" id="ss">00</div>
     <div class="divider"></div>
-    <div class="date" id="fecha"></div>
-    <div class="day-name" id="dia"></div>
+    <div class="fecha" id="fecha"></div>
+    <div class="dia" id="dia"></div>
   </div>
 
   <script>
-    var dias   = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
-    var meses  = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
-                  'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    var dias  = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+    var meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+                 'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
     function pad(n){ return n < 10 ? '0'+n : ''+n; }
 
     function tick(){
       var now = new Date();
-      document.getElementById('hh').textContent    = pad(now.getHours());
-      document.getElementById('mm').textContent    = pad(now.getMinutes());
-      document.getElementById('ss').textContent    = pad(now.getSeconds());
+      document.getElementById('hh').textContent = pad(now.getHours());
+      document.getElementById('mm').textContent = pad(now.getMinutes());
+      document.getElementById('ss').textContent = pad(now.getSeconds());
       document.getElementById('fecha').textContent =
         now.getDate() + ' de ' + meses[now.getMonth()] + ' de ' + now.getFullYear();
-      document.getElementById('dia').textContent   = dias[now.getDay()];
+      document.getElementById('dia').textContent = dias[now.getDay()];
     }
 
     tick();
     setInterval(tick, 1000);
 
-    /* Generar estrellas */
     var starsDiv = document.getElementById('stars');
     for(var i = 0; i < 120; i++){
       var s = document.createElement('div');
