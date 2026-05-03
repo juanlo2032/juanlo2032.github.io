@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reloj</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #080810;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
+      font-family: 'Georgia', 'Times New Roman', serif;
+    }
+
+    .container {
+      text-align: center;
+      animation: fadeIn 2s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .time {
+      font-size: 22vw;
+      font-weight: 200;
+      letter-spacing: 0.04em;
+      color: #e8e4dc;
+      line-height: 1;
+      text-shadow: 0 0 60px rgba(220, 210, 180, 0.15);
+    }
+
+    .time .colon {
+      animation: blink 1s step-end infinite;
+      display: inline-block;
+      margin: 0 0.01em;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.15; }
+    }
+
+    .seconds {
+      font-size: 5vw;
+      color: #7a7060;
+      letter-spacing: 0.1em;
+      margin-top: -1vw;
+      font-weight: 300;
+    }
+
+    .divider {
+      width: 40px;
+      height: 1px;
+      background: #3a3528;
+      margin: 3vw auto;
+    }
+
+    .date {
+      font-size: 4vw;
+      color: #6a6258;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      font-weight: 300;
+    }
+
+    .day-name {
+      font-size: 3vw;
+      color: #4a4540;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      margin-top: 1.5vw;
+      font-weight: 300;
+    }
+
+    /* Estrellas de fondo */
+    .stars {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .star {
+      position: absolute;
+      background: #fff;
+      border-radius: 50%;
+      animation: twinkle var(--d) ease-in-out infinite;
+      opacity: 0;
+    }
+
+    @keyframes twinkle {
+      0%, 100% { opacity: 0; }
+      50%       { opacity: var(--o); }
+    }
+
+    .container { position: relative; z-index: 1; }
+  </style>
+</head>
+<body>
+
+  <div class="stars" id="stars"></div>
+
+  <div class="container">
+    <div class="time">
+      <span id="hh">00</span><span class="colon">:</span><span id="mm">00</span>
+    </div>
+    <div class="seconds" id="ss">00</div>
+    <div class="divider"></div>
+    <div class="date" id="fecha"></div>
+    <div class="day-name" id="dia"></div>
+  </div>
+
+  <script>
+    var dias   = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+    var meses  = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+                  'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+    function pad(n){ return n < 10 ? '0'+n : ''+n; }
+
+    function tick(){
+      var now = new Date();
+      document.getElementById('hh').textContent    = pad(now.getHours());
+      document.getElementById('mm').textContent    = pad(now.getMinutes());
+      document.getElementById('ss').textContent    = pad(now.getSeconds());
+      document.getElementById('fecha').textContent =
+        now.getDate() + ' de ' + meses[now.getMonth()] + ' de ' + now.getFullYear();
+      document.getElementById('dia').textContent   = dias[now.getDay()];
+    }
+
+    tick();
+    setInterval(tick, 1000);
+
+    /* Generar estrellas */
+    var starsDiv = document.getElementById('stars');
+    for(var i = 0; i < 120; i++){
+      var s = document.createElement('div');
+      s.className = 'star';
+      var size = Math.random() * 2 + 0.5;
+      s.style.cssText = [
+        'width:'  + size + 'px',
+        'height:' + size + 'px',
+        'top:'    + Math.random()*100 + '%',
+        'left:'   + Math.random()*100 + '%',
+        '--d:'    + (3 + Math.random()*6) + 's',
+        '--o:'    + (0.3 + Math.random()*0.5),
+        'animation-delay:' + Math.random()*8 + 's'
+      ].join(';');
+      starsDiv.appendChild(s);
+    }
+  </script>
+</body>
+</html>
