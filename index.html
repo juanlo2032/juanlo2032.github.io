@@ -18,6 +18,43 @@
       font-family: 'Georgia', 'Times New Roman', serif;
     }
 
+    /* Batería fija arriba a la izquierda */
+    .bateria-wrap {
+      position: fixed;
+      top: 2vw;
+      left: 2.5vw;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      z-index: 10;
+    }
+
+    .bat-fila {
+      display: flex;
+      align-items: center;
+      gap: 0.8vw;
+    }
+
+    .bat-icono {
+      font-size: 3vw;
+      line-height: 1;
+    }
+
+    .bat-valor {
+      font-size: 3vw;
+      font-weight: 400;
+      letter-spacing: 0.05em;
+      color: #39FF14;
+    }
+
+    .bat-cargando {
+      font-size: 1.8vw;
+      color: #39FF14;
+      letter-spacing: 0.1em;
+      margin-top: 0.3vw;
+    }
+
+    /* Reloj */
     .container {
       text-align: center;
       animation: fadeIn 2s ease;
@@ -109,40 +146,6 @@
       font-weight: 300;
     }
 
-    /* Batería */
-    .bateria-wrap {
-      margin-top: 3vw;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 1.2vw;
-    }
-
-    .bat-icono {
-      font-size: 4vw;
-      line-height: 1;
-    }
-
-    .bat-texto {
-      font-size: 3.5vw;
-      font-weight: 300;
-      letter-spacing: 0.15em;
-      color: #aaaaaa;
-    }
-
-    .bat-valor {
-      font-size: 3.5vw;
-      font-weight: 400;
-      letter-spacing: 0.05em;
-    }
-
-    .bat-cargando {
-      font-size: 2.5vw;
-      color: #39FF14;
-      letter-spacing: 0.1em;
-      margin-top: 0.5vw;
-    }
-
     .stars {
       position: fixed;
       top: 0; left: 0;
@@ -167,6 +170,16 @@
 
   <div class="stars" id="stars"></div>
 
+  <!-- Batería arriba izquierda -->
+  <div class="bateria-wrap">
+    <div class="bat-fila">
+      <span class="bat-icono" id="bat-icono">🔋</span>
+      <span class="bat-valor" id="bat-valor">--%</span>
+    </div>
+    <div class="bat-cargando" id="bat-cargando"></div>
+  </div>
+
+  <!-- Reloj centrado -->
   <div class="container">
     <div class="time-row">
       <span class="hh" id="hh">00</span>
@@ -179,21 +192,14 @@
     <div class="divider"></div>
     <div class="fecha" id="fecha"></div>
     <div class="dia" id="dia"></div>
-
-    <div class="bateria-wrap">
-      <span class="bat-icono" id="bat-icono">🔋</span>
-      <span class="bat-texto">Batería:</span>
-      <span class="bat-valor" id="bat-valor">--</span>
-    </div>
-    <div class="bat-cargando" id="bat-cargando"></div>
   </div>
 
   <script>
     // =====================================================
     // CONFIGURA ESTOS DOS VALORES:
-    var HA_URL   = 'https://lucifer2032new.duckdns.org:45251';  // ej: https://lucifer2032new.duckdns.org:45251
+    var HA_URL   = 'https://lucifer2032new.duckdns.org:45251';
     var HA_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhY2EyNTIwZDhiNDE0ZWUxOTQ1MDA4NGM4ZmQyODU4MiIsImlhdCI6MTc3NTg1MDM5NSwiZXhwIjoyMDkxMjEwMzk1fQ.QhYfzV9YUPkkfo6fZGImLS6983JOt_hX0PoSGQtLImo';
-    var ENTIDAD  = 'sensor.bateria_panel_alarma';       // nombre exacto del sensor en HA
+    var ENTIDAD  = 'sensor.bateria_panel_alarma';
     // =====================================================
 
     var dias  = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
@@ -210,14 +216,6 @@
       document.getElementById('fecha').textContent =
         now.getDate() + ' de ' + meses[now.getMonth()] + ' de ' + now.getFullYear();
       document.getElementById('dia').textContent = dias[now.getDay()];
-    }
-
-    function getBatIcono(nivel, cargando) {
-      if (cargando) return '⚡';
-      if (nivel >= 90) return '🔋';
-      if (nivel >= 60) return '🔋';
-      if (nivel >= 30) return '🪫';
-      return '🪫';
     }
 
     function getBatColor(nivel) {
@@ -239,13 +237,13 @@
             var attrs = data.attributes || {};
             var cargando = attrs.charging === true;
 
-            var valorEl   = document.getElementById('bat-valor');
-            var iconoEl   = document.getElementById('bat-icono');
+            var valorEl    = document.getElementById('bat-valor');
+            var iconoEl    = document.getElementById('bat-icono');
             var cargandoEl = document.getElementById('bat-cargando');
 
             valorEl.textContent = nivel + '%';
             valorEl.style.color = getBatColor(nivel);
-            iconoEl.textContent = getBatIcono(nivel, cargando);
+            iconoEl.textContent = cargando ? '⚡' : (nivel < 30 ? '🪫' : '🔋');
             cargandoEl.textContent = cargando ? '⚡ Cargando' : '';
           } catch(e) {}
         }
