@@ -18,8 +18,8 @@
       font-family: 'Georgia', 'Times New Roman', serif;
     }
 
-    /* Batería fija arriba a la izquierda */
-    .bateria-wrap {
+    /* Info arriba a la izquierda */
+    .info-wrap {
       position: fixed;
       top: 2vw;
       left: 2.5vw;
@@ -27,31 +27,30 @@
       flex-direction: column;
       align-items: flex-start;
       z-index: 10;
+      gap: 0.5vw;
     }
 
-    .bat-fila {
+    .info-fila {
       display: flex;
       align-items: center;
       gap: 0.8vw;
     }
 
-    .bat-icono {
+    .info-icono {
       font-size: 3vw;
       line-height: 1;
     }
 
-    .bat-valor {
+    .info-valor {
       font-size: 3vw;
       font-weight: 400;
       letter-spacing: 0.05em;
-      color: #39FF14;
     }
 
     .bat-cargando {
       font-size: 1.8vw;
       color: #39FF14;
       letter-spacing: 0.1em;
-      margin-top: 0.3vw;
     }
 
     /* Reloj */
@@ -170,13 +169,17 @@
 
   <div class="stars" id="stars"></div>
 
-  <!-- Batería arriba izquierda -->
-  <div class="bateria-wrap">
-    <div class="bat-fila">
-      <span class="bat-icono" id="bat-icono">🔋</span>
-      <span class="bat-valor" id="bat-valor">--%</span>
+  <!-- Info arriba izquierda -->
+  <div class="info-wrap">
+    <div class="info-fila">
+      <span class="info-icono" id="bat-icono">🔋</span>
+      <span class="info-valor" id="bat-valor">--%</span>
     </div>
     <div class="bat-cargando" id="bat-cargando"></div>
+    <div class="info-fila">
+      <span class="info-icono">🌡️</span>
+      <span class="info-valor" id="temp-valor" style="color:#FF9900;">--°C</span>
+    </div>
   </div>
 
   <!-- Reloj centrado -->
@@ -197,9 +200,10 @@
   <script>
     // =====================================================
     // CONFIGURA ESTOS DOS VALORES:
-    var HA_URL   = 'https://lucifer2032new.duckdns.org:45251';
-    var HA_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhY2EyNTIwZDhiNDE0ZWUxOTQ1MDA4NGM4ZmQyODU4MiIsImlhdCI6MTc3NTg1MDM5NSwiZXhwIjoyMDkxMjEwMzk1fQ.QhYfzV9YUPkkfo6fZGImLS6983JOt_hX0PoSGQtLImo';
-    var ENTIDAD  = 'sensor.bateria_panel_alarma';
+    var HA_URL        = 'https://TU_URL_DE_HOME_ASSISTANT';
+    var HA_TOKEN      = 'PON_AQUI_TU_TOKEN';
+    var ENTIDAD_BAT   = 'sensor.bateria_panel_alarma';
+    var ENTIDAD_TEMP  = 'sensor.temperatura_panel_alarma';
     // =====================================================
 
     var dias  = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
@@ -224,37 +228,60 @@
       return '#FF3333';
     }
 
-    function actualizarBateria() {
+    function getTempColor(temp) {
+      if (temp >= 45) return '#FF3333';
+      if (temp >= 38) return '#FFD700';
+      return '#FF9900';
+    }
+
+    function getEstado(entidad, callback) {
       var xhr = new XMLHttpRequest();
-      xhr.open('GET', HA_URL + '/api/states/' + ENTIDAD, true);
+      xhr.open('GET', HA_URL + '/api/states/' + entidad, true);
       xhr.setRequestHeader('Authorization', 'Bearer ' + HA_TOKEN);
       xhr.setRequestHeader('Content-Type', 'application/json');
       xhr.onload = function() {
         if (xhr.status === 200) {
-          try {
-            var data = JSON.parse(xhr.responseText);
-            var nivel = parseInt(data.state);
-            var attrs = data.attributes || {};
-            var cargando = attrs.charging === true;
-
-            var valorEl    = document.getElementById('bat-valor');
-            var iconoEl    = document.getElementById('bat-icono');
-            var cargandoEl = document.getElementById('bat-cargando');
-
-            valorEl.textContent = nivel + '%';
-            valorEl.style.color = getBatColor(nivel);
-            iconoEl.textContent = cargando ? '⚡' : (nivel < 30 ? '🪫' : '🔋');
-            cargandoEl.textContent = cargando ? '⚡ Cargando' : '';
-          } catch(e) {}
+          try { callback(JSON.parse(xhr.responseText)); } catch(e) {}
         }
       };
       xhr.send();
     }
 
+    function actualizarBateria() {
+      getEstado(ENTIDAD_BAT, function(data) {
+        var nivel    = parseInt(data.state);
+        var attrs    = data.attributes || {};
+        var cargando = attrs.charging === true;
+
+        var valorEl    = document.getElementById('bat-valor');
+        var iconoEl    = document.getElementById('bat-icono');
+        var cargandoEl = document.getElementById('bat-cargando');
+
+        valorEl.textContent = nivel + '%';
+        valorEl.style.color = getBatColor(nivel);
+        iconoEl.textContent = cargando ? '⚡' : (nivel < 30 ? '🪫' : '🔋');
+        cargandoEl.textContent = cargando ? '⚡ Cargando' : '';
+      });
+    }
+
+    function actualizarTemperatura() {
+      getEstado(ENTIDAD_TEMP, function(data) {
+        var temp   = parseFloat(data.state).toFixed(1);
+        var tempEl = document.getElementById('temp-valor');
+        tempEl.textContent = temp + '°C';
+        tempEl.style.color = getTempColor(parseFloat(temp));
+      });
+    }
+
+    function actualizar() {
+      actualizarBateria();
+      actualizarTemperatura();
+    }
+
     tick();
     setInterval(tick, 1000);
-    actualizarBateria();
-    setInterval(actualizarBateria, 30000);
+    actualizar();
+    setInterval(actualizar, 30000);
 
     /* Estrellas */
     var starsDiv = document.getElementById('stars');
